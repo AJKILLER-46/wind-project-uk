@@ -56,13 +56,24 @@ async def _get_rows(start_date: date, end_date: date, cutoff_time: str):
 
 
 @router.get("/settlement-periods", response_model=SettlementResponse)
+@router.get("/settlement", response_model=SettlementResponse)
 async def settlement_periods(
-    start_date: date = Query(date(2026, 1, 1)),
-    end_date: date = Query(date(2026, 1, 31)),
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    delivery_date: Optional[date] = Query(None),
     cutoff_time: str = Query("11:00"),
     page: int = Query(1, ge=1),
     page_size: int = Query(48, ge=1, le=500),
 ):
+    if delivery_date:
+        start_date = delivery_date
+        end_date = delivery_date
+    else:
+        if start_date is None:
+            start_date = date(2026, 1, 15)
+        if end_date is None:
+            end_date = start_date
+
     if start_date < FIXTURE_START or end_date > FIXTURE_END:
         raise HTTPException(status_code=400, detail="Date range out of supported period.")
 
@@ -83,14 +94,22 @@ async def settlement_periods(
 
 
 @router.get("/settlement-periods/export")
+@router.get("/settlement/export")
 async def export_csv(
-    start_date: date = Query(date(2026, 1, 1)),
-    end_date: date = Query(date(2026, 1, 31)),
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    delivery_date: Optional[date] = Query(None),
     cutoff_time: str = Query("11:00"),
 ):
     """Export settlement period table as CSV."""
-    if start_date < FIXTURE_START or end_date > FIXTURE_END:
-        raise HTTPException(status_code=400, detail="Date range out of supported period.")
+    if delivery_date:
+        start_date = delivery_date
+        end_date = delivery_date
+    else:
+        if start_date is None:
+            start_date = date(2026, 1, 15)
+        if end_date is None:
+            end_date = start_date
 
     rows = await _get_rows(start_date, end_date, cutoff_time)
 

@@ -11,7 +11,36 @@ import { fetchHealth, fetchOverview, fetchForecast } from './api/client';
 import { Wind, Shield, ExternalLink } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<string>('overview');
+  const getInitialTab = (): string => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['overview', 'explorer', 'analytics', 'settlement', 'scenario'].includes(tabParam)) {
+        return tabParam;
+      }
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['overview', 'explorer', 'analytics', 'settlement', 'scenario'].includes(hash)) {
+        return hash;
+      }
+    } catch {
+      // fallback
+    }
+    return 'overview';
+  };
+
+  const [currentTab, setCurrentTabState] = useState<string>(getInitialTab);
+
+  const setCurrentTab = (tab: string) => {
+    setCurrentTabState(tab);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.pushState({}, '', url.toString());
+    } catch {
+      // fallback
+    }
+  };
+
   const [selectedDate, setSelectedDate] = useState<string>('2026-01-15');
   const [cutoffTime, setCutoffTime] = useState<string>('11:00');
   const [useUtc, setUseUtc] = useState<boolean>(false);

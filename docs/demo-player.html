@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WindLens UK - Voiceover Walkthrough Studio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #020617;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      background: #0d9488;
+      color: #020617;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+    .title { font-weight: 700; font-size: 16px; color: #fff; }
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .nav-btn {
+      color: #94a3b8;
+      font-size: 13px;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { color: #fff; background: #334155; }
+    .nav-btn.primary { background: #0d9488; color: #020617; font-weight: 600; border-color: #14b8a6; }
+
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+      background: #000;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    footer {
+      background: #090d16;
+      border-top: 1px solid #1e293b;
+      padding: 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .rec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .rec-dot {
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .timer {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #2dd4bf;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .teleprompter {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-left: 4px solid #14b8a6;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: #f1f5f9;
+      min-height: 72px;
+    }
+    .teleprompter strong { color: #38bdf8; }
+    .teleprompter .focus-hint { color: #fbbf24; font-weight: 600; margin-bottom: 4px; display: block; font-size: 13px; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-group { display: flex; gap: 10px; }
+    button {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    button:hover { background: #334155; border-color: #475569; }
+    button.primary { background: #0d9488; color: #020617; border-color: #14b8a6; }
+    button.primary:hover { background: #14b8a6; }
+    button.danger { background: #dc2626; color: #fff; border-color: #ef4444; }
+    button.danger:hover { background: #b91c1c; }
+    button.success { background: #16a34a; color: #fff; border-color: #22c55e; }
+    button.success:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-box">
+      <span class="logo-badge">WINDLENS UK</span>
+      <span class="title">Demonstration Video & Synchronized Voiceover Studio</span>
+    </div>
+    <div class="nav-links">
+      <a href="http://localhost:5173" target="_blank" class="nav-btn primary">&#8599; Open Live App (Port 5173)</a>
+      <a href="client-demo-script.md" target="_blank" class="nav-btn">View Markdown Script</a>
+    </div>
+  </header>
+
+  <main>
+    <video id="videoPlayer" controls preload="auto">
+      <source src="windlens-demo-walkthrough.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </main>
+
+  <footer>
+    <div class="status-row">
+      <div id="recordingIndicator" style="display: none;" class="rec-badge">
+        <span class="rec-dot"></span> RECORDING MIC AUDIO
+      </div>
+      <div class="timer" id="timeDisplay">00:00 / 04:45</div>
+      <div style="font-size: 12px; color: #94a3b8;">
+        Total Duration: 4 minutes 45 seconds (Strictly &lt; 5:00)
+      </div>
+    </div>
+
+    <div class="teleprompter" id="teleprompter">
+      <span class="focus-hint" id="focusHint">LOOK AT: WindLens UK Platform & National Grid Imbalance Risk</span>
+      <span id="scriptText">"Hello. Welcome to WindLens UK, an energy analytics platform engineered for UK day-ahead power trading desks and renewable portfolio managers..."</span>
+    </div>
+
+    <div class="controls">
+      <div class="btn-group">
+        <button id="playPauseBtn" class="primary">&#9658; Play Video Walkthrough</button>
+        <button id="recordMicBtn">&#127908; Record My Voiceover With Mic</button>
+        <button id="downloadAudioBtn" class="success" style="display: none;">&#128190; Download Voiceover Audio (.webm)</button>
+      </div>
+
+      <div style="font-size: 12px; color: #94a3b8;">
+        Tip: You can read the prompt directly on screen while recording!
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const cues = [
+      {
+        start: 0,
+        end: 30,
+        title: "SECTION 1: INTRODUCTION & TRADING PROBLEM",
+        focus: "WindLens UK Platform & National Grid Imbalance Risk",
+        script: "Hello. Welcome to WindLens UK, an energy analytics platform engineered for UK day-ahead power trading desks and renewable portfolio managers. In Great Britain, power trading desks must commit generation schedules before the Day-Ahead Auction gate closure at 11:00 AM on the day prior to delivery. With over 28 gigawatts of wind, forecast uncertainty directly drives imbalance exposure and cashout risk."
+      },
+      {
+        start: 30,
+        end: 75,
+        title: "SECTION 2: GATE CUTOFF & ELEXON BMRS PROVENANCE",
+        focus: "Lookahead Bias Prevention — 11:00 D-1 Decision Cutoff & Elexon Provenance",
+        script: "Our reporting scope evaluates all 31 days of January 2026—1,488 half-hour settlement periods. At the top of the interface, notice the decision cutoff filter set to 11:00 D-1 Europe/London. All calculations strictly respect UK Local Time (GMT/BST). WindLens UK integrates two core Elexon BMRS streams: FUELHH for actual metered wind outturn, and WINDFOR for multi-run forecast publications."
+      },
+      {
+        start: 75,
+        end: 135,
+        title: "SECTION 3: FORECAST EXPLORER — POINT-IN-TIME INTEGRITY",
+        focus: "Settlement Period 24 Evolution & Green Star Gate-Selected Forecast",
+        script: "In the Forecast Explorer for Settlement Period 24 (Midday 11:30–12:00): Elexon publishes multiple WINDFOR forecast runs leading up to delivery. Other dashboards mistakenly evaluate performance against the latest forecast published immediately before delivery. That is hindsight analysis. Here, at 11:00 D-1, the latest eligible forecast was 8,458 MW—marked with our green star. Later runs updated this, but were unavailable at gate closure. WindLens isolates post-cutoff runs, guaranteeing zero lookahead bias."
+      },
+      {
+        start: 135,
+        end: 195,
+        title: "SECTION 4: ACCURACY METRICS & ERROR DISTRIBUTION",
+        focus: "Statistical Verification: MAE 837 MW, RMSE 1,079 MW, Bias +204 MW, MAPE 6.6%",
+        script: "In Accuracy Analysis, we track error volatility across all 31 days of January. Our Core Analytics module computes four transparent metrics: MAE (837 MW), RMSE (1,079 MW), and Signed Bias (+204 MW). Following UK market standard convention—Forecast minus Actual—positive bias indicates over-forecasting. Crucially, periods where actual wind was 0 MW are strictly isolated from MAPE, eliminating mathematical division-by-zero distortion."
+      },
+      {
+        start: 195,
+        end: 225,
+        title: "SECTION 5: 48-PERIOD SETTLEMENT LEDGER & CSV EXPORT",
+        focus: "Half-Hourly Audit Ledger & One-Click CSV Export (1,488 Records)",
+        script: "In the Settlement Ledger, operations and trading desks have a complete 48-period audit trail with verified UK local timestamps, settlement period IDs, outturn, and gate-selected forecasts. With one click, traders can download the full CSV export containing all 1,488 rows for downstream trade reconciliation and settlement risk analysis."
+      },
+      {
+        start: 225,
+        end: 265,
+        title: "SECTION 6: RESIDUAL DEMAND PROCUREMENT SIMULATOR",
+        focus: "Dispatchable Thermal Need (20,802 MW) vs Outturn (21,069 MW)",
+        script: "Finally, in the Scenario Simulator, we translate wind uncertainty into commercial procurement requirements. With 38,000 MW national demand and 8,000 MW non-wind baseload, WindLens calculates the Planned Thermal Need (20,802 MW) versus Actual Outturn (21,069 MW). This reveals the exact dispatchable flexibility that gas CCGTs, peakers, and battery storage had to provide in the balancing mechanism."
+      },
+      {
+        start: 265,
+        end: 285,
+        title: "SECTION 7: ARCHITECTURE & DEPLOYMENT HANDOVER",
+        focus: "Production Summary: Docker Containerized, 45 Tests Passing, Elexon Ready",
+        script: "To summarize: WindLens UK delivers complete point-in-time integrity with zero lookahead bias, transparent error metrics, and commercial dispatch modeling. The application is Docker containerized, verified with 45 automated pytest suites, and ready for deployment into your trading desk infrastructure. Thank you."
+      }
+    ];
+
+    const video = document.getElementById('videoPlayer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const focusHint = document.getElementById('focusHint');
+    const scriptText = document.getElementById('scriptText');
+    const recordMicBtn = document.getElementById('recordMicBtn');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const downloadAudioBtn = document.getElementById('downloadAudioBtn');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // Synchronize teleprompter with video currentTime
+    video.addEventListener('timeupdate', () => {
+      const cur = video.currentTime;
+      timeDisplay.textContent = `${formatTime(cur)} / 04:45`;
+
+      const cue = cues.find(c => cur >= c.start && cur < c.end) || cues[cues.length - 1];
+      focusHint.textContent = `LOOK AT: ${cue.focus}`;
+      scriptText.innerHTML = `<strong>${cue.title}:</strong> "${cue.script}"`;
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPauseBtn.innerHTML = "&#10074;&#10074; Pause Video";
+      } else {
+        video.pause();
+        playPauseBtn.innerHTML = "&#9658; Play Video Walkthrough";
+      }
+    });
+
+    video.addEventListener('play', () => {
+      playPauseBtn.innerHTML = "&#10074;&#10074; Pause Video";
+    });
+
+    video.addEventListener('pause', () => {
+      playPauseBtn.innerHTML = "&#9658; Play Video Walkthrough";
+    });
+
+    // In-browser Microphone Recorder
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    recordMicBtn.addEventListener('click', async () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        // Stop recording
+        mediaRecorder.stop();
+        video.pause();
+        recordMicBtn.innerHTML = "&#127908; Record Again";
+        recordMicBtn.className = "";
+        recordingIndicator.style.display = "none";
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          downloadAudioBtn.style.display = "inline-flex";
+          downloadAudioBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'windlens-uk-voiceover.webm';
+            a.click();
+          };
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        // Start playback and recording
+        video.currentTime = 0;
+        await video.play();
+        mediaRecorder.start();
+
+        recordMicBtn.innerHTML = "&#9632; Stop Recording";
+        recordMicBtn.className = "danger";
+        recordingIndicator.style.display = "inline-flex";
+        downloadAudioBtn.style.display = "none";
+      } catch (err) {
+        alert("Microphone access was denied or is unavailable: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
