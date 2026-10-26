@@ -45,14 +45,24 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# CORS - restrict to configured origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+# CORS - allow configured origins or wildcard
+cors_origins = settings.cors_origins
+if "*" in cors_origins or not cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Register routers
 app.include_router(health.router, prefix="/api")

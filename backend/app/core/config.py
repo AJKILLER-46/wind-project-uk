@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = 300  # 5 minutes
     cache_max_size: int = 128
 
-    # CORS - comma-separated list
-    cors_origins_str: str = "http://localhost:5173,http://localhost:3000"
+    # CORS - comma-separated list or * for all
+    cors_origins_str: str = "*"
 
     @property
     def cors_origins(self) -> List[str]:

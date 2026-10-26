@@ -7,7 +7,7 @@ import {
   CheckCircle2 
 } from 'lucide-react';
 import { SettlementResponse, SettlementPeriodRow } from '../types';
-import { fetchSettlementPeriods, getSettlementCsvExportUrl } from '../api/client';
+import { fetchSettlementPeriods, getSettlementCsvExportUrl, downloadSettlementCsvDirectly } from '../api/client';
 
 interface SettlementPageProps {
   selectedDate: string;
@@ -131,14 +131,20 @@ export const SettlementPage: React.FC<SettlementPageProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* CSV Export Button */}
-          <a
-            href={exportUrl}
-            download={`settlement_periods_${selectedDate}.csv`}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-slate-950 font-semibold text-xs shadow-md shadow-teal-600/20 transition-colors"
+          <button
+            onClick={() => {
+              if (data?.rows?.length) {
+                downloadSettlementCsvDirectly(data.rows, selectedDate);
+              } else {
+                window.location.href = exportUrl;
+              }
+            }}
+            title="Download full 48-period audit ledger as CSV"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-slate-950 font-semibold text-xs shadow-md shadow-teal-600/20 transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Download CSV Export</span>
-          </a>
+          </button>
         </div>
       </div>
 

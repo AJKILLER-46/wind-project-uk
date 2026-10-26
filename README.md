@@ -325,20 +325,30 @@ tests/test_windlens.py::TestAPIEndpoints::test_scenario_invalid_demand PASSED
 
 ## 11. Deployment Instructions
 
-### Frontend (Vercel)
-1. Push project to your GitHub repository.
-2. In Vercel, import the repository and set the Root Directory to `frontend`.
-3. Framework Preset: `Vite`.
-4. Ensure `frontend/vercel.json` routes `/api/(.*)` to the deployed backend URL.
-5. Deploy.
+### Full-Stack Vercel Deployment (Recommended — 1-Click)
+WindLens UK is fully configured to run natively on Vercel as a single unified fullstack project (Vite React Frontend + FastAPI Python Serverless Functions):
 
-### Backend (Python Cloud Service / Render / Cloud Run)
-1. Deploy from the `backend/` directory using Python 3.11+.
-2. Build Command: `pip install -r requirements.txt`.
-3. Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-4. Set Environment Variables:
-   - `ENVIRONMENT=production`
-   - `CORS_ORIGINS=https://<your-vercel-domain>.vercel.app`
+1. **Push to GitHub**: Push this repository to your GitHub account.
+2. **Import into Vercel**:
+   - Go to [vercel.com/new](https://vercel.com/new) and select your repository.
+   - **Root Directory**: Leave as `./` (default root).
+   - **Build Command**: Automatically detected from root `vercel.json` (`npm --prefix frontend install && npm --prefix frontend run build`).
+   - **Output Directory**: Automatically set to `frontend/dist`.
+3. **Deploy**:
+   - Click **Deploy**.
+   - Vercel automatically compiles the TypeScript React SPA and deploys the FastAPI backend as Serverless Functions (`api/index.py`).
+   - All 5 modules (Overview, Forecast Explorer, Accuracy Analytics, Settlement Ledger with CSV Export, and Residual Demand Scenario Calculator) will be live immediately without needing any external server!
+
+### Deploy via Vercel CLI
+```bash
+# In the project root:
+vercel
+# For production:
+vercel --prod
+```
+
+### Alternative: Standalone Frontend Deployment
+If deploying only the `frontend/` directory to Vercel, the built-in edge calculation engine will automatically handle all metrics, version histories, and CSV downloads with zero server dependencies.
 
 ---
 

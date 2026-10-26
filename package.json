@@ -1,0 +1,13 @@
+{
+  "name": "windlens-uk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UK Day-Ahead Wind Forecast and Procurement Intelligence Platform",
+  "scripts": {
+    "postinstall": "npm --prefix frontend install",
+    "build": "npm --prefix frontend run build",
+    "dev": "npm --prefix frontend run dev",
+    "preview": "npm --prefix frontend run preview",
+    "test:backend": "pytest backend/tests"
+  }
+}
