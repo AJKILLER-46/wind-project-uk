@@ -23,12 +23,39 @@ import {
 // Support VITE_API_URL if configured, otherwise use relative /api
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || '/api';
 
+/**
+ * Fast fetch wrapper with automatic timeout (default 2500ms).
+ * Prevents UI freezes or long hangs when backend is cold or unreachable.
+ */
+async function safeFetch(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = 2500
+): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    let errorDetail = 'API request failed';
+    let errorDetail = `HTTP ${res.status}`;
     try {
-      const err = await res.json();
-      errorDetail = err.detail || JSON.stringify(err);
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const err = await res.json();
+        errorDetail = err.detail || JSON.stringify(err);
+      } else {
+        errorDetail = await res.text();
+      }
     } catch {
       errorDetail = `${res.status} ${res.statusText}`;
     }
@@ -39,7 +66,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export async function fetchHealth(): Promise<HealthResponse> {
   try {
-    const res = await fetch(`${BASE_URL}/health`);
+    const res = await safeFetch(`${BASE_URL}/health`);
     return await handleResponse<HealthResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Backend unreachable, using client engine fallback for health.', err);
@@ -57,7 +84,7 @@ export async function fetchOverview(
     if (deliveryDate) params.append('delivery_date', deliveryDate);
     params.append('cutoff_time', cutoffTime);
 
-    const res = await fetch(`${BASE_URL}/overview?${params.toString()}`);
+    const res = await safeFetch(`${BASE_URL}/overview?${params.toString()}`);
     return await handleResponse<OverviewResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Using client engine fallback for overview:', date, err);
@@ -75,7 +102,7 @@ export async function fetchForecast(
     if (deliveryDate) params.append('delivery_date', deliveryDate);
     params.append('cutoff_time', cutoffTime);
 
-    const res = await fetch(`${BASE_URL}/forecast?${params.toString()}`);
+    const res = await safeFetch(`${BASE_URL}/forecast?${params.toString()}`);
     return await handleResponse<ForecastResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Using client engine fallback for forecast:', date, err);
@@ -95,7 +122,7 @@ export async function fetchForecastVersions(
       cutoff_time: cutoffTime,
     });
 
-    const res = await fetch(`${BASE_URL}/forecast/versions?${params.toString()}`);
+    const res = await safeFetch(`${BASE_URL}/forecast/versions?${params.toString()}`);
     return await handleResponse<ForecastVersionsResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Using client engine fallback for versions:', deliveryDate, err);
@@ -116,7 +143,7 @@ export async function fetchAccuracy(
     if (endDate) params.append('end_date', endDate);
     params.append('cutoff_time', cutoffTime);
 
-    const res = await fetch(`${BASE_URL}/analytics/accuracy?${params.toString()}`);
+    const res = await safeFetch(`${BASE_URL}/analytics/accuracy?${params.toString()}`);
     return await handleResponse<AccuracyResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Using client engine fallback for accuracy metrics:', err);
@@ -138,7 +165,7 @@ export async function fetchSettlementPeriods(
     params.append('page', page.toString());
     params.append('page_size', pageSize.toString());
 
-    const res = await fetch(`${BASE_URL}/settlement?${params.toString()}`);
+    const res = await safeFetch(`${BASE_URL}/settlement?${params.toString()}`);
     return await handleResponse<SettlementResponse>(res);
   } catch (err) {
     console.info('[WindLens UK] Using client engine fallback for settlement ledger:', date, err);
@@ -176,7 +203,7 @@ export async function calculateScenario(
   payload: ScenarioInput
 ): Promise<ScenarioResponse> {
   try {
-    const res = await fetch(`${BASE_URL}/scenarios/residual-demand`, {
+    const res = await safeFetch(`${BASE_URL}/scenarios/residual-demand`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -194,3 +221,16 @@ export async function calculateScenario(
     return getFallbackScenario(payload);
   }
 }
+
+// Re-export fallback methods for direct instant frontend rendering
+export {
+  getFallbackHealth,
+  getFallbackOverview,
+  getFallbackForecast,
+  getFallbackForecastVersions,
+  getFallbackAccuracy,
+  getFallbackSettlementPeriods,
+  getFallbackScenario,
+  generateSettlementCsv,
+};
+

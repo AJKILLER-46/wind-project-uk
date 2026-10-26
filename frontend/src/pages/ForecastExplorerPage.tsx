@@ -21,7 +21,12 @@ import {
   History
 } from 'lucide-react';
 import { ForecastVersionsResponse, ForecastResponse } from '../types';
-import { fetchForecastVersions, fetchForecast } from '../api/client';
+import { 
+  fetchForecastVersions, 
+  fetchForecast, 
+  getFallbackForecast, 
+  getFallbackForecastVersions 
+} from '../api/client';
 
 interface ForecastExplorerPageProps {
   selectedDate: string;
@@ -36,15 +41,18 @@ export const ForecastExplorerPage: React.FC<ForecastExplorerPageProps> = ({
   useUtc,
 }) => {
   const [selectedSp, setSelectedSp] = useState<number>(24); // Default to midday SP 24 (11:30 - 12:00)
-  const [forecastOverview, setForecastOverview] = useState<ForecastResponse | null>(null);
-  const [versionsData, setVersionsData] = useState<ForecastVersionsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [forecastOverview, setForecastOverview] = useState<ForecastResponse | null>(() => 
+    getFallbackForecast(selectedDate, cutoffTime)
+  );
+  const [versionsData, setVersionsData] = useState<ForecastVersionsResponse | null>(() =>
+    getFallbackForecastVersions(selectedDate, `${selectedDate}T11:30:00Z`, cutoffTime)
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load day's periods first
+  // Load day's periods
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
     fetchForecast(selectedDate, cutoffTime)
       .then((res) => {
         if (isMounted) {
@@ -53,11 +61,15 @@ export const ForecastExplorerPage: React.FC<ForecastExplorerPageProps> = ({
         }
       })
       .catch((err) => {
-        if (isMounted) setError(err.message || 'Failed to load day forecast');
+        if (isMounted) {
+          console.info('Backend sync note for explorer:', err);
+          setForecastOverview(getFallbackForecast(selectedDate, cutoffTime));
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
       });
+
 
     return () => {
       isMounted = false;
