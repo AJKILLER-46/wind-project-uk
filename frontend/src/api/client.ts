@@ -20,8 +20,20 @@ import {
   generateSettlementCsv,
 } from './fallback';
 
-// Support VITE_API_URL if configured, otherwise use relative /api
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || '/api';
+// Safe resolution of BASE_URL that never throws TypeError if import.meta.env is undefined
+const getBaseUrl = (): string => {
+  try {
+    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_API_URL) {
+      return String((import.meta as any).env.VITE_API_URL).replace(/\/$/, '');
+    }
+  } catch {
+    // fallback
+  }
+  return '/api';
+};
+
+const BASE_URL = getBaseUrl();
+
 
 /**
  * Fast fetch wrapper with automatic timeout (default 2500ms).

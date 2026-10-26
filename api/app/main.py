@@ -73,9 +73,26 @@ for prefix in ["/api", ""]:
     app.include_router(settlement.router, prefix=prefix)
     app.include_router(scenarios.router, prefix=prefix)
 
+# Serve built frontend SPA if frontend/dist exists
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+
+dist_candidates = [
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dist")),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist")),
+]
+dist_dir = next((d for d in dist_candidates if os.path.exists(d)), None)
+
+if dist_dir:
+    assets_dir = os.path.join(dist_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
 # Root API info routes
 @app.get("/api")
-@app.get("/")
 @app.get("/api/index")
 @app.get("/api/index.py")
 async def api_root():
@@ -97,29 +114,19 @@ async def api_root():
         ],
     }
 
+# Root route: serve frontend SPA index.html when available, otherwise API info
+@app.get("/")
+async def root_index():
+    if dist_dir and os.path.isfile(os.path.join(dist_dir, "index.html")):
+        return FileResponse(os.path.join(dist_dir, "index.html"))
+    return await api_root()
+
 @app.get("/docs", include_in_schema=False)
 async def docs_redirect():
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/api/docs")
 
-# Serve built frontend SPA if frontend/dist exists
-import os
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from fastapi import HTTPException
-
-dist_candidates = [
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")),
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dist")),
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist")),
-]
-dist_dir = next((d for d in dist_candidates if os.path.exists(d)), None)
-
 if dist_dir:
-    assets_dir = os.path.join(dist_dir, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
         clean_path = full_path.lstrip("/")
@@ -140,6 +147,7 @@ if dist_dir:
             return FileResponse(index_file)
 
         raise HTTPException(status_code=404, detail="Not Found")
+
 
 
 

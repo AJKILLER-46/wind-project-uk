@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  background-color: #020617;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
 @layer base {
   body {
     @apply bg-slate-950 text-slate-100 font-sans antialiased;
