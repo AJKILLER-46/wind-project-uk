@@ -72,23 +72,15 @@ app.include_router(analytics.router, prefix="/api")
 app.include_router(settlement.router, prefix="/api")
 app.include_router(scenarios.router, prefix="/api")
 
-# Serve built frontend SPA if frontend/dist exists
-import os
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+# Root API info route
+@app.get("/api")
+@app.get("/")
+async def api_root():
+    return {
+        "status": "online",
+        "service": "WindLens UK API",
+        "version": "1.0.0",
+        "docs": "/api/docs",
+    }
 
-dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
-assets_dir = os.path.join(dist_dir, "assets")
-
-if os.path.exists(assets_dir):
-    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        if full_path.startswith("api/"):
-            return None
-        file_path = os.path.join(dist_dir, full_path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(dist_dir, "index.html"))
 

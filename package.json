@@ -9,7 +9,7 @@
     "dev": "python scripts/dev.py",
     "dev:all": "python scripts/dev.py",
     "dev:frontend": "npm --prefix frontend run dev",
-    "dev:backend": "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload",
+    "dev:backend": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload",
     "start": "python scripts/dev.py",
     "preview": "npm --prefix frontend run preview",
     "test:backend": "pytest backend/tests"
